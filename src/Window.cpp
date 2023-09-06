@@ -1,6 +1,4 @@
 #include "Window.h"
-#include <gdiplus.h>
-
 
 void HRS::Window::ScaleWindow(Resolution res)
 {
@@ -27,8 +25,12 @@ void HRS::Window::ScaleWindow(Resolution res)
 void HRS::Window::Screenshot()
 {
 	HRS::Window::GetSingleton()->ScaleWindow({ 1920, 1080 });
-	gfx.Screenshot();
-	HRS::Window::GetSingleton()->ScaleWindow({ 1280, 720 });
+	screenshotHandler.Screenshot(
+		[]()
+		{
+			HRS::Window::GetSingleton()->ScaleWindow({ 1280, 720 });
+		}
+	);	
 }
 
 HRS::Window* HRS::Window::GetSingleton()

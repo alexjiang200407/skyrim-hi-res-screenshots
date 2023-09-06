@@ -1,5 +1,3 @@
-# It's recommended to set a minimum CMake version.
-# If you use CMake features from higher versions, update this to match.
 cmake_minimum_required(VERSION 3.21)
 
 project(HiResScreenshots VERSION 0.0.1 LANGUAGES CXX)
@@ -9,6 +7,8 @@ set(OUTPUT_FOLDER "C:/Modding/MO2/mods/Hi-Res\ Screenshots")
 include(sourcelist.cmake)
 
 find_package(CommonLibSSE CONFIG REQUIRED)
+find_package(simpleini QUIET)
+
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${sources}) # <--- specifies plugin.cpp
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23) # <--- use C++23 standard
 target_precompile_headers(${PROJECT_NAME} PRIVATE PCH.h) # <--- PCH.h is required!

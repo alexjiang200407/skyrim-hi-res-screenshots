@@ -2,7 +2,7 @@
 
 #include "WinApi.h"
 #include "HRSException.h"
-#include "Graphics.h"
+#include "ScreenshotHandler.h"
 
 #define HRS_LAST_EXCEPT HRS::Window::HrException(__LINE__, __FILE__, GetLastError()); 
 #define THROW_HRS_LAST_EXCEPT(condition) if (!condition) throw HRS_LAST_EXCEPT
@@ -24,7 +24,7 @@ namespace HRS
 
 			const char* what() const override;
 			const char* GetType() const override { return "Window Exception"; }
-			HRESULT GetErrorCode() const { return hr; };
+			HRESULT     GetErrorCode() const { return hr; };
 			std::string GetDescription() const { return std::system_category().message(hr); };
 
 		private:
@@ -46,14 +46,13 @@ namespace HRS
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 
-		void ScaleWindow(Resolution res);
-		void Screenshot();
-
+		void           ScaleWindow(Resolution res);
+		void           Screenshot();
 		static Window* GetSingleton();
-		static HWND GetHwnd() { return reinterpret_cast<HWND__*>(RE::Main::GetSingleton()->wnd); }
+		static HWND    GetHwnd() { return reinterpret_cast<HWND__*>(RE::Main::GetSingleton()->wnd); }
 
 	private:
-		Graphics gfx{ GetHwnd() };
+		ScreenshotHandler screenshotHandler{  };
 	};
 
 	
