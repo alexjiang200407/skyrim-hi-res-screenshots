@@ -9,7 +9,8 @@ namespace HRS
 {
 	class ScreenshotHandler
 		:
-		public Singleton<ScreenshotHandler>
+		public Singleton<ScreenshotHandler>,
+		public RE::BSTEventSink<RE::InputEvent*>
 	{
 	public:
 		static constexpr size_t numSettings = 2;
@@ -28,12 +29,15 @@ namespace HRS
 				ReadAllSettings();
 			}
 
+
 		public:
 			virtual constexpr const char* GetSection() const override { return section; }
 			virtual constexpr std::array<std::string, numSettings> GetAllKeys() const override { return keys;  }
 
 		public:
 			HRS::Resolution GetScreenshotResolution();
+
+
 
 		public:
 			static constexpr const char*               section = "Screenshot";
@@ -59,9 +63,12 @@ namespace HRS
 		ScreenshotHandler() = default;
 		ScreenshotHandler(const ScreenshotHandler&) = delete;
 		const ScreenshotHandler& operator=(const ScreenshotHandler&) = delete;
-
+		
+		
+		
+		void Register();
 		void Screenshot();
-
+		RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* event, RE::BSTEventSource<RE::InputEvent*>*) override;
 
 	private:
 		static DWORD WINAPI CheckScreenshotCompleted(LPVOID callback);

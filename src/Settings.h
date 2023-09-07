@@ -20,6 +20,8 @@ public:
 
 		SI_Error rc = ini.LoadFile(file);
 
+
+		// TODO handle non-existent ini file
 		if (rc != SI_OK)
 			return;
 
@@ -28,7 +30,7 @@ public:
 			std::string key = GetAllKeys()[i];
 			const char* section = GetSection();
 			const char* value = ini.GetValue(section, key.c_str());
-			settingMap.insert({ this->GetAllKeys()[i], value });
+			settingMap.insert({ key, value });
 		}
 	}
 
