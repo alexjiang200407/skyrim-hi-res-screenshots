@@ -10,4 +10,6 @@ set(
 	src/HRSException.h
 	src/Settings.h
 	src/Resolution.h
+	src/logger.cpp
+	src/logger.h
 )

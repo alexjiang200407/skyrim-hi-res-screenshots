@@ -5,8 +5,8 @@ void HRS::Window::ScaleWindow(Resolution res)
 	THROW_HRS_LAST_EXCEPT(SetWindowPos(
 		GetHwnd(), nullptr, 0, 0,
 		res.width, res.height,
-		SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE |
-		SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS
+		SWP_NOMOVE | SWP_NOZORDER |
+		SWP_ASYNCWINDOWPOS
 	));
 }
 

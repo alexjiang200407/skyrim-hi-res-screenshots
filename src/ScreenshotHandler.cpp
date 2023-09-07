@@ -1,11 +1,16 @@
 #include "ScreenshotHandler.h"
-
+#include "logger.h"
 
 void HRS::ScreenshotHandler::Screenshot()
 {
+	auto* msgQueue = RE::UIMessageQueue::GetSingleton();
+
+	logger::info("Screenshot started");
+
 	Resolution originalResolution = HRS::Window::GetSingleton()->GetWindowResolution();
 	HRS::Window::GetSingleton()->ScaleWindow(settings.GetScreenshotResolution());
 
+	msgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 
 	RE::MenuControls::GetSingleton()->QueueScreenshot();
 
@@ -63,22 +68,17 @@ DWORD WINAPI HRS::ScreenshotHandler::CheckScreenshotCompleted(LPVOID params)
 	(callbackParams)->callback(callbackParams->rescale);
 
 	delete callbackParams;
-
 	return 0;
 }
 
 void HRS::ScreenshotHandler::ScreenshotCompletedCallback(HRS::Resolution res)
 {
+	auto* msgQueue = RE::UIMessageQueue::GetSingleton();
 	HRS::Window::GetSingleton()->ScaleWindow(res);
-	RE::UIMessageQueue* msgQueue = RE::UIMessageQueue::GetSingleton();
 
-	for (auto& menu : RE::UI::GetSingleton()->menuMap)
-	{
-		const char *str = menu.first.c_str();
-		msgQueue->AddMessage(menu.first, RE::UI_MESSAGE_TYPE::kUpdate, nullptr);
-	}
+	logger::info("Screenshot completed!");
 
-	msgQueue->AddMessage(RE::CursorMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kUpdate, nullptr);
+	msgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
 }
 
 HRS::Resolution HRS::ScreenshotHandler::ScreenshotSettings::GetScreenshotResolution()
