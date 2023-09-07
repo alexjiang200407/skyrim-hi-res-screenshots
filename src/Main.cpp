@@ -1,4 +1,4 @@
-#include "window.h"
+#include "ScreenshotHandler.h"
 #include "HRSException.h"
 
 
@@ -11,7 +11,7 @@ SKSEPluginLoad(const SKSE::LoadInterface *skse)
         if (message->type == SKSE::MessagingInterface::kDataLoaded)
         {
             RE::ConsoleLog::GetSingleton()->Print("Hi-Res Screenshots has initiated");
-            HRS::Window::GetSingleton()->Screenshot();
+            HRS::ScreenshotHandler::GetSingleton()->Screenshot();
         }
     });
 

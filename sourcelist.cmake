@@ -9,5 +9,5 @@ set(
 	src/HRSException.cpp
 	src/HRSException.h
 	src/Settings.h
-	src/Settings.cpp
+	src/Resolution.h
 )

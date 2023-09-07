@@ -2,7 +2,8 @@
 
 #include "WinApi.h"
 #include "HRSException.h"
-#include "ScreenshotHandler.h"
+#include "Resolution.h"
+#include "Singleton.h"
 
 #define HRS_LAST_EXCEPT HRS::Window::HrException(__LINE__, __FILE__, GetLastError()); 
 #define THROW_HRS_LAST_EXCEPT(condition) if (!condition) throw HRS_LAST_EXCEPT
@@ -10,6 +11,8 @@
 namespace HRS
 {
 	class Window
+		:
+		public Singleton<Window>
 	{
 	public:
 		class HrException
@@ -30,15 +33,6 @@ namespace HRS
 		private:
 			HRESULT hr;
 		};
-	private:
-		class Resolution
-		{
-		public:
-			Resolution(int width, int height) : width(width), height(height) {}
-			int width;
-			int height;
-		};
-
 	public:
 		Window() = default;
 		~Window() = default;
@@ -46,13 +40,9 @@ namespace HRS
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 
-		void           ScaleWindow(Resolution res);
-		void           Screenshot();
-		static Window* GetSingleton();
-		static HWND    GetHwnd() { return reinterpret_cast<HWND__*>(RE::Main::GetSingleton()->wnd); }
-
-	private:
-		ScreenshotHandler screenshotHandler{  };
+		void                 ScaleWindow(Resolution res);
+		static Resolution    GetWindowResolution();
+		static HWND          GetHwnd() { return reinterpret_cast<HWND__*>(RE::Main::GetSingleton()->wnd); }
 	};
 
 	

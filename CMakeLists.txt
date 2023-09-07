@@ -7,6 +7,8 @@ set(OUTPUT_FOLDER "C:/Modding/MO2/mods/Hi-Res\ Screenshots")
 include(sourcelist.cmake)
 
 find_package(CommonLibSSE CONFIG REQUIRED)
+
+add_compile_definitions(SI_NO_CONVERSION)
 find_package(simpleini QUIET)
 
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${sources}) # <--- specifies plugin.cpp

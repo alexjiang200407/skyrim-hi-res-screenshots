@@ -22,21 +22,14 @@ void HRS::Window::ScaleWindow(Resolution res)
 	}
 }
 
-void HRS::Window::Screenshot()
+HRS::Resolution HRS::Window::GetWindowResolution()
 {
-	HRS::Window::GetSingleton()->ScaleWindow({ 1920, 1080 });
-	screenshotHandler.Screenshot(
-		[]()
-		{
-			HRS::Window::GetSingleton()->ScaleWindow({ 1280, 720 });
-		}
-	);	
-}
+	RECT rect;
+	THROW_HRS_LAST_EXCEPT(
+		GetWindowRect(GetHwnd(), &rect)
+	);
 
-HRS::Window* HRS::Window::GetSingleton()
-{
-	static Window wnd;
-	return &wnd;
+	return Resolution{ rect.right - rect.left, rect.bottom - rect.top };
 }
 
 const char* HRS::Window::HrException::what() const
