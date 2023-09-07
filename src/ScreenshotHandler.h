@@ -31,7 +31,7 @@ namespace HRS
 
 
 		public:
-			virtual constexpr const char* GetSection() const override { return section; }
+			virtual constexpr const char*                          GetSection() const override { return section; }
 			virtual constexpr std::array<std::string, numSettings> GetAllKeys() const override { return keys;  }
 
 		public:
@@ -67,7 +67,7 @@ namespace HRS
 		
 		
 		void Register();
-		void Screenshot();
+		void HiResScreenshot();
 		RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* event, RE::BSTEventSource<RE::InputEvent*>*) override;
 
 	private:
@@ -76,5 +76,7 @@ namespace HRS
 
 	public:
 		ScreenshotSettings settings{".\\Data\\SKSE\\Plugins\\HiResScreenshots.ini"};
+
+		std::vector<RE::BSFixedString> hiddenMenus;
 	};
 }

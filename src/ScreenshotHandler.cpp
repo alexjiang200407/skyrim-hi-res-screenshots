@@ -1,17 +1,16 @@
 #include "ScreenshotHandler.h"
 #include "logger.h"
 
-void HRS::ScreenshotHandler::Screenshot()
+void HRS::ScreenshotHandler::HiResScreenshot()
 {
-	auto* msgQueue = RE::UIMessageQueue::GetSingleton();
-
 	logger::info("Screenshot started");
 
 	Resolution originalResolution = HRS::Window::GetSingleton()->GetWindowResolution();
 	HRS::Window::GetSingleton()->ScaleWindow(settings.GetScreenshotResolution());
+	auto* uiMsgQueue = RE::UIMessageQueue::GetSingleton();
 
-	msgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 
+	uiMsgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
 	RE::MenuControls::GetSingleton()->QueueScreenshot();
 
 	ScreenshotCallbackParams* params = new ScreenshotCallbackParams {
@@ -40,9 +39,20 @@ RE::BSEventNotifyControl HRS::ScreenshotHandler::ProcessEvent(RE::InputEvent* co
 		!btnEvt->IsRepeating()
 	)
 	{
+		auto* ui = RE::UI::GetSingleton();
+
+		for (auto& menu : ui->menuStack)
+		{
+			if (!menu->AlwaysOpen())
+			{
+				RE::DebugNotification("Cannot screenshot with menus active!");
+				return RE::BSEventNotifyControl::kContinue;
+			}
+		}
+
 		try
 		{
-			Screenshot();
+			HiResScreenshot();
 		}
 		catch (const HRSException& e)
 		{
@@ -76,9 +86,10 @@ void HRS::ScreenshotHandler::ScreenshotCompletedCallback(HRS::Resolution res)
 	auto* msgQueue = RE::UIMessageQueue::GetSingleton();
 	HRS::Window::GetSingleton()->ScaleWindow(res);
 
-	logger::info("Screenshot completed!");
+	auto* uiMsgQueue = RE::UIMessageQueue::GetSingleton();
+	uiMsgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
 
-	msgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+	logger::info("Screenshot completed!");
 }
 
 HRS::Resolution HRS::ScreenshotHandler::ScreenshotSettings::GetScreenshotResolution()
