@@ -38,10 +38,9 @@ namespace HRS
 			HRS::Resolution GetScreenshotResolution();
 
 
-
 		public:
 			static constexpr const char*               section = "Screenshot";
-			const std::array<std::string, numSettings> keys = { "screenshotWidth"s, "screenshotHeight"s };
+			const std::array<std::string, numSettings> keys = { "screenshotWidth"s, "screenshotHeight"s};
 
 		};
 
@@ -59,24 +58,46 @@ namespace HRS
 			void (*callback)(HRS::Resolution);
 			HRS::Resolution rescale;
 		};
+	
+	private:
+		struct Hooks
+		{
+
+			struct TakeScreenshot
+			{
+				static INT32 thunk(INT64 a1, INT64 a2, const char* dest, UINT32 type);
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			struct WriteScreenshot
+			{
+				static INT64 thunk(INT64 a1, UINT32 a2, INT64 a3, const wchar_t* dest);
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+
+			static void Install()
+			{
+				REL::Relocation<std::uintptr_t> TakeScreenshot_hook{ REL::ID(36853), 0x69 };
+				REL::Relocation<std::uintptr_t> WriteScreenshot_hook{ REL::ID(77406), 0x143 };
+
+				stl::write_thunk_call<TakeScreenshot>(TakeScreenshot_hook.address());
+				stl::write_thunk_call<WriteScreenshot>(WriteScreenshot_hook.address());
+			}
+		};
+	
 	public:
 		ScreenshotHandler() = default;
 		ScreenshotHandler(const ScreenshotHandler&) = delete;
-		const ScreenshotHandler& operator=(const ScreenshotHandler&) = delete;
-		
+		const ScreenshotHandler& operator=(const ScreenshotHandler&) = delete;	
 		
 		
 		void Register();
 		void HiResScreenshot();
 		RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* event, RE::BSTEventSource<RE::InputEvent*>*) override;
 
-	private:
-		static DWORD WINAPI CheckScreenshotCompleted(LPVOID callback);
-		static void ScreenshotCompletedCallback(HRS::Resolution res);
-
 	public:
 		ScreenshotSettings settings{".\\Data\\SKSE\\Plugins\\HiResScreenshots.ini"};
 
-		std::vector<RE::BSFixedString> hiddenMenus;
 	};
 }

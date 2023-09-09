@@ -5,25 +5,19 @@ void HRS::ScreenshotHandler::HiResScreenshot()
 {
 	logger::info("Screenshot started");
 
-	Resolution originalResolution = HRS::Window::GetSingleton()->GetWindowResolution();
-	HRS::Window::GetSingleton()->ScaleWindow(settings.GetScreenshotResolution());
-	auto* uiMsgQueue = RE::UIMessageQueue::GetSingleton();
+	if (HRS::Window::GetSingleton()->startingResolution == HRS::Window::GetSingleton()->GetWindowResolution())
+	{
+		HRS::Window::GetSingleton()->ScaleWindow(settings.GetScreenshotResolution());
 
 
-	uiMsgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kHide, nullptr);
-	RE::MenuControls::GetSingleton()->QueueScreenshot();
+		//const char* f = "C:\\Users\\alexj\\OneDrive\\Documents\\My Games\\Screenshots\\Poo.png";
 
-	ScreenshotCallbackParams* params = new ScreenshotCallbackParams {
-		ScreenshotCompletedCallback, originalResolution
-	};
-
-	DWORD threadId;
-	HANDLE handle = CreateThread(
-		0, 0, CheckScreenshotCompleted, params,
-		0, &threadId
-	);
-
-	THROW_HRS_LAST_EXCEPT(handle);
+		//Hooks::TakeScreenshot::thunk(0, 0, f, 3);
+	}
+	else
+	{
+		HRS::Window::GetSingleton()->ScaleWindow(HRS::Window::GetSingleton()->startingResolution);
+	}
 }
 
 RE::BSEventNotifyControl HRS::ScreenshotHandler::ProcessEvent(RE::InputEvent* const* event, RE::BSTEventSource<RE::InputEvent*>*)
@@ -39,17 +33,6 @@ RE::BSEventNotifyControl HRS::ScreenshotHandler::ProcessEvent(RE::InputEvent* co
 		!btnEvt->IsRepeating()
 	)
 	{
-		auto* ui = RE::UI::GetSingleton();
-
-		for (auto& menu : ui->menuStack)
-		{
-			if (!menu->AlwaysOpen())
-			{
-				RE::DebugNotification("Cannot screenshot with menus active!");
-				return RE::BSEventNotifyControl::kContinue;
-			}
-		}
-
 		try
 		{
 			HiResScreenshot();
@@ -69,29 +52,6 @@ RE::BSEventNotifyControl HRS::ScreenshotHandler::ProcessEvent(RE::InputEvent* co
 	return RE::BSEventNotifyControl::kContinue;
 }
 
-DWORD WINAPI HRS::ScreenshotHandler::CheckScreenshotCompleted(LPVOID params)
-{
-	auto& screenshotHandler = RE::MenuControls::GetSingleton()->screenshotHandler;
-	while (screenshotHandler->screenshotQueued);
-
-	ScreenshotCallbackParams* callbackParams = (ScreenshotCallbackParams*)params;
-	(callbackParams)->callback(callbackParams->rescale);
-
-	delete callbackParams;
-	return 0;
-}
-
-void HRS::ScreenshotHandler::ScreenshotCompletedCallback(HRS::Resolution res)
-{
-	auto* msgQueue = RE::UIMessageQueue::GetSingleton();
-	HRS::Window::GetSingleton()->ScaleWindow(res);
-
-	auto* uiMsgQueue = RE::UIMessageQueue::GetSingleton();
-	uiMsgQueue->AddMessage(RE::HUDMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
-
-	logger::info("Screenshot completed!");
-}
-
 HRS::Resolution HRS::ScreenshotHandler::ScreenshotSettings::GetScreenshotResolution()
 {
 	int width = atoi(GetSetting("screenshotWidth").c_str());
@@ -99,7 +59,23 @@ HRS::Resolution HRS::ScreenshotHandler::ScreenshotSettings::GetScreenshotResolut
 	return { width, height };
 }
 
+
 void HRS::ScreenshotHandler::Register()
 {
+	ScreenshotHandler::Hooks::Install();
 	RE::BSInputDeviceManager::GetSingleton()->AddEventSink<RE::InputEvent*>(this);
+}
+
+INT32 HRS::ScreenshotHandler::Hooks::TakeScreenshot::thunk(INT64 a1, INT64 a2, const char* dest, UINT32 type)
+{
+	HRS::Resolution res = HRS::Window::GetWindowResolution();
+	logger::info("Taking screenshot {} {} {} {}. Resolution: {} {}", a1, a2, dest, type, res.width, res.height);
+	
+	return func(a1, a2, dest, type);
+}
+
+INT64 HRS::ScreenshotHandler::Hooks::WriteScreenshot::thunk(INT64 a1, UINT32 a2, INT64 a3, const wchar_t* dest)
+{
+	logger::info("Writing screenshot {} {} {}", a1, a2, a3);	
+	return func(a1, a2, a3, dest);
 }

@@ -25,16 +25,28 @@ namespace HRS
 				HRSException(line, file), hr(hr)
 			{};
 
-			const char* what() const override;
-			const char* GetType() const override { return "Window Exception"; }
-			HRESULT     GetErrorCode() const { return hr; };
-			std::string GetDescription() const { return std::system_category().message(hr); };
+			const char*         what() const override;
+			virtual const char* GetType() const override { return "Window Exception"; }
+			HRESULT             GetErrorCode() const { return hr; };
+			std::string         GetDescription() const { return std::system_category().message(hr); };
 
 		private:
 			HRESULT hr;
 		};
+
 	public:
-		Window() = default;
+		static LRESULT CALLBACK WndProc_Hook(
+			HWND   hWnd,
+			UINT   uMsg,
+			WPARAM wParam,
+			LPARAM lParam
+		);
+	public:
+		Window()
+			:
+			startingResolution(GetWindowResolution())
+		{}
+
 		~Window() = default;
 
 		Window(const Window&) = delete;
@@ -43,6 +55,13 @@ namespace HRS
 		void                 ScaleWindow(Resolution res);
 		static Resolution    GetWindowResolution();
 		static HWND          GetHwnd() { return reinterpret_cast<HWND__*>(RE::Main::GetSingleton()->wnd); }
+		static HINSTANCE     GetInstance() { return reinterpret_cast<HINSTANCE__*>(RE::Main::GetSingleton()->instance); }
+		void                 Init();
+
+	public:
+		const Resolution startingResolution;
+
+		WNDPROC          prevWndProc;
 	};
 
 	
