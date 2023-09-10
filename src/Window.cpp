@@ -1,27 +1,39 @@
 #include "Window.h"
 #include "logger.h"
+#include "ScreenshotHandler.h"
 
 LRESULT CALLBACK HRS::Window::WndProc_Hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_WINDOWPOSCHANGED)
-	{
-		logger::info("Finished scaling");
-	}
-	else if (uMsg == WM_WINDOWPOSCHANGING)
-	{
-		logger::info("Started scaling");
-	}
+	auto* wnd = Window::GetSingleton();	
 
-	return CallWindowProcW(Window::GetSingleton()->prevWndProc, Window::GetSingleton()->GetHwnd(), uMsg, wParam, lParam);
+#ifdef _DEBUG
+	{
+		std::string msgStr = wnd->msgMap.Decode(uMsg);
+		logger::info("{} wp: {:x}, lp: {:x}", msgStr, wParam, lParam);
+	}
+#endif
+
+	//if (uMsg == WM_WINDOWPOSCHANGING && wnd->startingResolution != wnd->GetWindowResolution())
+	//{
+	//	logger::info("Window pos changed! Resolution: {} {}", wnd->GetWindowResolution().width, wnd->GetWindowResolution().height);
+	//	ScreenshotHandler::GetSingleton()->TakeScreenshot();
+	//}
+	//else if (uMsg == WM_ERASEBKGND && wnd->startingResolution != wnd->GetWindowResolution())
+	//{
+	//	logger::info("erasing background cancelled");
+	//	return 0;
+	//}
+
+	return CallWindowProcW(Window::GetSingleton()->prevWndProc, hWnd, uMsg, wParam, lParam);
 }
+
 
 void HRS::Window::ScaleWindow(Resolution res)
 {
 	THROW_HRS_LAST_EXCEPT(SetWindowPos(
-		GetHwnd(), nullptr, 0, 0,
+		GetHwnd(), HWND_TOP, 0, 0,
 		res.width, res.height,
-		//SWP_NOMOVE | SWP_NOREPOSITION |
-		SWP_ASYNCWINDOWPOS
+		SWP_ASYNCWINDOWPOS | SWP_NOCOPYBITS
 	));
 }
 
@@ -29,24 +41,60 @@ HRS::Resolution HRS::Window::GetWindowResolution()
 {
 	RECT rect;
 	THROW_HRS_LAST_EXCEPT(
-		GetWindowRect(GetHwnd(), &rect)
+		GetWindowRect(Window::GetSingleton()->GetHwnd(), &rect)
 	);
 
 	return Resolution{ rect.right - rect.left, rect.bottom - rect.top };
 }
 
-void HRS::Window::Init()
+void HRS::Window::TakeScreenshot()
 {
+	if (Window::GetSingleton()->GetWindowResolution() == Window::GetSingleton()->startingResolution)
+	{
+		ScaleWindow(ScreenshotHandler::GetSingleton()->settings.GetScreenshotResolution());
+	}
+	else
+	{
+		ScaleWindow(Window::GetSingleton()->startingResolution);
+	}
+}
+
+void HRS::Window::Register(HWND hWnd)
+{
+	logger::info("Registering the window");
+
+	wnd = hWnd;
+
+	//{
+	//	RECT rect{};
+	//	THROW_HRS_LAST_EXCEPT(GetWindowRect(wnd, reinterpret_cast<LPRECT>(&rect)));
+	//	startingResolution = HRS::Resolution{ rect.right - rect.left, rect.bottom - rect.top };
+	//}
+
+
+	logger::info("Starting resolution {} {}", startingResolution.width, startingResolution.height);
+
+
 	prevWndProc = reinterpret_cast<WNDPROC>(
 		SetWindowLongPtr(
-			GetHwnd(),
+			hWnd,
 			GWLP_WNDPROC,
-			LONG_PTR(WndProc_Hook)
+			reinterpret_cast<LONG_PTR>(Window::WndProc_Hook)
 		));
+
 
 	THROW_HRS_LAST_EXCEPT(prevWndProc);
 
-	logger::info("Installed Window processer hook.");
+	logger::info("Successfully installed Window processer hook.");
+}
+
+void HRS::Window::Unregister()
+{
+	THROW_HRS_LAST_EXCEPT(SetWindowLongPtr(
+		GetHwnd(),
+		GWLP_WNDPROC,
+		reinterpret_cast<LONG_PTR>(prevWndProc)
+	));
 }
 
 

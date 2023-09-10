@@ -12,4 +12,10 @@ set(
 	src/Resolution.h
 	src/logger.cpp
 	src/logger.h
+	src/HRS.cpp
+	src/HRS.h
+	src/WindowsMessageMap.h
+	src/WindowsMessageMap.cpp
+	src/Renderer.cpp
+	src/Renderer.h
 )

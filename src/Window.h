@@ -4,6 +4,10 @@
 #include "HRSException.h"
 #include "Resolution.h"
 #include "Singleton.h"
+#include "WindowsMessageMap.h"
+#include <commctrl.h>
+#include <d3d11.h>
+#pragma comment(lib, "comctl32.lib")
 
 #define HRS_LAST_EXCEPT HRS::Window::HrException(__LINE__, __FILE__, GetLastError()); 
 #define THROW_HRS_LAST_EXCEPT(condition) if (!condition) throw HRS_LAST_EXCEPT
@@ -41,27 +45,35 @@ namespace HRS
 			WPARAM wParam,
 			LPARAM lParam
 		);
-	public:
-		Window()
-			:
-			startingResolution(GetWindowResolution())
-		{}
 
+	public:
+		Window() = default;
 		~Window() = default;
 
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 
-		void                 ScaleWindow(Resolution res);
-		static Resolution    GetWindowResolution();
-		static HWND          GetHwnd() { return reinterpret_cast<HWND__*>(RE::Main::GetSingleton()->wnd); }
-		static HINSTANCE     GetInstance() { return reinterpret_cast<HINSTANCE__*>(RE::Main::GetSingleton()->instance); }
-		void                 Init();
+		//void                          Init(IDXGISwapChain* swapchain, ID3D11Device* device, ID3D11DeviceContext* context);
+		void                            Register(HWND hWnd);
+		void                            Unregister();
+		void                            ScaleWindow(Resolution res);
+		static Resolution               GetWindowResolution();
+		HWND                            GetHwnd() { return wnd; }
+		void                            TakeScreenshot();
 
 	public:
-		const Resolution startingResolution;
+		Resolution               startingResolution{ 0, 0 };
+		WNDPROC                  prevWndProc;
+		bool                     queuedScreenshot;
+		HWND                     wnd;
 
-		WNDPROC          prevWndProc;
+	private:
+		//static Window           singleton;
+
+#ifdef _DEBUG
+		WindowsMessageMap        msgMap;
+#endif
+
 	};
 
 	

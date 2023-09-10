@@ -4,6 +4,11 @@
     "version-string": "0.0.1",
     "dependencies": [
       "commonlibsse-ng",
-      "simpleini"
+      "simpleini",
+      {
+        "name": "imgui",
+        "features": [ "dx11-binding", "win32-binding" ],
+        "version>=": "1.88"
+      }
     ]
 }

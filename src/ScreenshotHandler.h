@@ -9,8 +9,7 @@ namespace HRS
 {
 	class ScreenshotHandler
 		:
-		public Singleton<ScreenshotHandler>,
-		public RE::BSTEventSink<RE::InputEvent*>
+		public Singleton<ScreenshotHandler>
 	{
 	public:
 		static constexpr size_t numSettings = 2;
@@ -31,8 +30,8 @@ namespace HRS
 
 
 		public:
-			virtual constexpr const char*                          GetSection() const override { return section; }
-			virtual constexpr std::array<std::string, numSettings> GetAllKeys() const override { return keys;  }
+			constexpr const char*                          GetSection() const override { return section; }
+			constexpr std::array<std::string, numSettings> GetAllKeys() const override { return keys;  }
 
 		public:
 			HRS::Resolution GetScreenshotResolution();
@@ -91,13 +90,12 @@ namespace HRS
 		ScreenshotHandler(const ScreenshotHandler&) = delete;
 		const ScreenshotHandler& operator=(const ScreenshotHandler&) = delete;	
 		
-		
 		void Register();
-		void HiResScreenshot();
-		RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* event, RE::BSTEventSource<RE::InputEvent*>*) override;
+		void TakeScreenshot();
 
 	public:
 		ScreenshotSettings settings{".\\Data\\SKSE\\Plugins\\HiResScreenshots.ini"};
+		bool               queuedScreenshot = false;
 
 	};
 }

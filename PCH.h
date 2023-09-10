@@ -5,6 +5,9 @@
 
 using namespace std::literals;
 
+#define DLLEXPORT __declspec(dllexport)
+
+#define OFFSET(se, ae) ae
 
 namespace stl
 {
