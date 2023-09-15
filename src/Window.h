@@ -5,9 +5,7 @@
 #include "Resolution.h"
 #include "Singleton.h"
 #include "WindowsMessageMap.h"
-#include <commctrl.h>
-#include <d3d11.h>
-#pragma comment(lib, "comctl32.lib")
+#include "Graphics.h"
 
 #define HRS_LAST_EXCEPT HRS::Window::HrException(__LINE__, __FILE__, GetLastError()); 
 #define THROW_HRS_LAST_EXCEPT(condition) if (!condition) throw HRS_LAST_EXCEPT
@@ -45,32 +43,28 @@ namespace HRS
 			WPARAM wParam,
 			LPARAM lParam
 		);
-
 	public:
 		Window() = default;
-		~Window() = default;
+		~Window();
 
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 
-		//void                          Init(IDXGISwapChain* swapchain, ID3D11Device* device, ID3D11DeviceContext* context);
-		void                            Register(HWND hWnd);
+		void                            Register(HWND hWnd, RE::BSGraphics::RendererWindow renderWnd, ID3D11Device* device, ID3D11DeviceContext* context);
 		void                            Unregister();
-		void                            ScaleWindow(Resolution res);
 		static Resolution               GetWindowResolution();
 		HWND                            GetHwnd() { return wnd; }
-		void                            TakeScreenshot();
-
+		void                            ScaleWindow(Resolution res);
 	public:
 		Resolution               startingResolution{ 0, 0 };
-		WNDPROC                  prevWndProc;
-		bool                     queuedScreenshot;
-		HWND                     wnd;
+		WNDPROC                  prevWndProc = 0;
+		HWND                     wnd = 0;
+		Graphics*                gfx = nullptr;
 
 	private:
-		//static Window           singleton;
+		bool                     registered = false;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		WindowsMessageMap        msgMap;
 #endif
 

@@ -8,7 +8,7 @@ set(OUTPUT_FOLDER "C:/Modding/MO2/mods/Hi-Res\ Screenshots")
 find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(simpleini QUIET)
 find_package(imgui CONFIG REQUIRED)
-
+find_package(directxtex CONFIG REQUIRED)
 
 add_compile_definitions(SI_NO_CONVERSION)
 
@@ -46,6 +46,8 @@ target_link_libraries(
 	PUBLIC 
 		CommonLibSSE::CommonLibSSE
 		imgui::imgui
+        Microsoft::DirectXTex
+        
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23) # <--- use C++23 standard

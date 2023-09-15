@@ -1,5 +1,6 @@
 #include "HRS.h"
 #include "Window.h"
+#include "logger.h"
 
 void HRS::HiResScreenshots::Register()
 {
@@ -14,33 +15,46 @@ RE::BSEventNotifyControl HRS::HiResScreenshots::ProcessEvent(RE::InputEvent* con
 	RE::ButtonEvent* btnEvt = (*event)->AsButtonEvent();
 
 	if (
-		btnEvt->GetIDCode() == RE::DirectInput8::DIK_L &&
-		btnEvt->IsPressed() &&
-		!btnEvt->IsRepeating()
-		)
+		!btnEvt->IsPressed() ||
+		btnEvt->IsRepeating()
+	)
+		return RE::BSEventNotifyControl::kContinue;
+
+	uint32_t idCode = btnEvt->GetIDCode();
+	
+	// Don't handle escape
+	if (idCode == 1)
+		return RE::BSEventNotifyControl::kContinue;
+
+	if (idCode == inputSettings.GetScreenshotKey())
 	{
-		try
+		Window::GetSingleton()->gfx->CaptureScreen();
+	}
+	else if (idCode == inputSettings.GetUpscaleKey())
+	{
+		if (upscaled)
 		{
-			HRS::Window::GetSingleton()->TakeScreenshot();
+			Window::GetSingleton()->ScaleWindow(Window::GetSingleton()->startingResolution);
 		}
-		catch (const HRSException& e)
+		else
 		{
-			MessageBoxA(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
-			exit(1);
+			Window::GetSingleton()->ScaleWindow({ 2560, 1440 });
 		}
-		catch (...)
-		{
-			MessageBoxA(nullptr, "Unknown Exception", "Unknown Exception", MB_OK | MB_ICONEXCLAMATION);
-			exit(1);
-		}
+
+		upscaled = !upscaled;
 	}
 
 	return RE::BSEventNotifyControl::kContinue;
-
 }
 
 uint32_t HRS::HiResScreenshots::InputEventSettings::GetScreenshotKey() 
 { 
-	const char* val = GetSetting("screenshotKey").c_str(); 
-	return atoll(val);
+	std::string val = GetSetting("screenshotKey");
+	return strtoul(val.c_str(), nullptr, 0);
+}
+
+uint32_t HRS::HiResScreenshots::InputEventSettings::GetUpscaleKey()
+{
+	std::string val = GetSetting("upscaleKey");
+	return strtoul(val.c_str(), nullptr, 0);
 }

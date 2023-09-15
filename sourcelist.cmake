@@ -18,4 +18,10 @@ set(
 	src/WindowsMessageMap.cpp
 	src/Renderer.cpp
 	src/Renderer.h
+	src/Graphics.h
+	src/Graphics.cpp
+	src/dxerr.cpp
+	src/dxerr.h
+	src/DxgiInfoManager.cpp
+	src/DxgiInfoManager.h
 )

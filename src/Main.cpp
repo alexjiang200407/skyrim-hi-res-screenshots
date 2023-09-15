@@ -5,25 +5,6 @@
 #include "ScreenshotHandler.h"
 #include "Renderer.h"
 
-//extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
-//    SKSE::PluginVersionData v;
-//    v.PluginName(Plugin::NAME);
-//    v.PluginVersion(Plugin::VERSION);
-//    v.UsesAddressLibrary(true);
-//    v.HasNoStructUse(true);
-//    return v;
-//}();
-
-
-//extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
-//    SKSE::PluginVersionData v;
-//    v.PluginName(Plugin::NAME);
-//    v.PluginVersion(Plugin::VERSION);
-//    v.UsesAddressLibrary(true);
-//    v.HasNoStructUse(false);
-//    return v;
-//}();
-
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse)
 {
     HRS::SetupLog();

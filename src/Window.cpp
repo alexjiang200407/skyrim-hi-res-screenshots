@@ -4,38 +4,23 @@
 
 LRESULT CALLBACK HRS::Window::WndProc_Hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	auto* wnd = Window::GetSingleton();	
+	auto* wnd = Window::GetSingleton();
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	{
 		std::string msgStr = wnd->msgMap.Decode(uMsg);
 		logger::info("{} wp: {:x}, lp: {:x}", msgStr, wParam, lParam);
 	}
 #endif
 
-	//if (uMsg == WM_WINDOWPOSCHANGING && wnd->startingResolution != wnd->GetWindowResolution())
-	//{
-	//	logger::info("Window pos changed! Resolution: {} {}", wnd->GetWindowResolution().width, wnd->GetWindowResolution().height);
-	//	ScreenshotHandler::GetSingleton()->TakeScreenshot();
-	//}
-	//else if (uMsg == WM_ERASEBKGND && wnd->startingResolution != wnd->GetWindowResolution())
-	//{
-	//	logger::info("erasing background cancelled");
-	//	return 0;
-	//}
-
 	return CallWindowProcW(Window::GetSingleton()->prevWndProc, hWnd, uMsg, wParam, lParam);
 }
 
-
-void HRS::Window::ScaleWindow(Resolution res)
+HRS::Window::~Window()
 {
-	THROW_HRS_LAST_EXCEPT(SetWindowPos(
-		GetHwnd(), HWND_TOP, 0, 0,
-		res.width, res.height,
-		SWP_ASYNCWINDOWPOS | SWP_NOCOPYBITS
-	));
+	delete gfx;
 }
+
 
 HRS::Resolution HRS::Window::GetWindowResolution()
 {
@@ -47,33 +32,21 @@ HRS::Resolution HRS::Window::GetWindowResolution()
 	return Resolution{ rect.right - rect.left, rect.bottom - rect.top };
 }
 
-void HRS::Window::TakeScreenshot()
+void HRS::Window::ScaleWindow(Resolution res)
 {
-	if (Window::GetSingleton()->GetWindowResolution() == Window::GetSingleton()->startingResolution)
-	{
-		ScaleWindow(ScreenshotHandler::GetSingleton()->settings.GetScreenshotResolution());
-	}
-	else
-	{
-		ScaleWindow(Window::GetSingleton()->startingResolution);
-	}
+	logger::info("Scaling window to {} {}", res.width, res.height);
+	THROW_HRS_LAST_EXCEPT(SetWindowPos(GetHwnd(), HWND_TOP, 0, 0, res.width, res.height, SWP_ASYNCWINDOWPOS));
 }
 
-void HRS::Window::Register(HWND hWnd)
+void HRS::Window::Register(HWND hWnd, RE::BSGraphics::RendererWindow renderWnd, ID3D11Device* device, ID3D11DeviceContext* context)
 {
 	logger::info("Registering the window");
 
 	wnd = hWnd;
-
-	//{
-	//	RECT rect{};
-	//	THROW_HRS_LAST_EXCEPT(GetWindowRect(wnd, reinterpret_cast<LPRECT>(&rect)));
-	//	startingResolution = HRS::Resolution{ rect.right - rect.left, rect.bottom - rect.top };
-	//}
-
+	startingResolution = { renderWnd.windowWidth, renderWnd.windowHeight };
 
 	logger::info("Starting resolution {} {}", startingResolution.width, startingResolution.height);
-
+	gfx = new Graphics{ hWnd, device, context, renderWnd.swapChain };
 
 	prevWndProc = reinterpret_cast<WNDPROC>(
 		SetWindowLongPtr(
@@ -82,8 +55,8 @@ void HRS::Window::Register(HWND hWnd)
 			reinterpret_cast<LONG_PTR>(Window::WndProc_Hook)
 		));
 
-
 	THROW_HRS_LAST_EXCEPT(prevWndProc);
+	registered = true;
 
 	logger::info("Successfully installed Window processer hook.");
 }
