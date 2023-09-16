@@ -16,8 +16,6 @@ set(
 	src/HRS.h
 	src/WindowsMessageMap.h
 	src/WindowsMessageMap.cpp
-	src/Renderer.cpp
-	src/Renderer.h
 	src/Graphics.h
 	src/Graphics.cpp
 	src/dxerr.cpp

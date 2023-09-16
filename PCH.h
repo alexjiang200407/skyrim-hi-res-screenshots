@@ -9,6 +9,8 @@ using namespace std::literals;
 
 #define OFFSET(se, ae) ae
 
+#define INI_FILE ".\\Data\\SKSE\\Plugins\\HiResScreenshots.ini"
+
 namespace stl
 {
 	using namespace SKSE::stl;

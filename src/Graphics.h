@@ -32,6 +32,17 @@ namespace HRS
 			HRESULT     hr;
 			std::string info;
 		};
+
+	public:
+		struct CreateD3DAndSwapChainHook
+		{
+			static void thunk();
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			static void Install();
+		};
+
+
 	public:
 		Graphics() = delete;
 		Graphics(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* context, IDXGISwapChain* swapchain)
@@ -47,7 +58,8 @@ namespace HRS
 	public:
 		void CaptureScreen();
 		void CaptureScreen(ID3D11Texture2D* texture);
-
+		void ResizeTarget(Resolution res);
+		void ResizeBuffer(Resolution res);
 
 	public:
 		HWND                 hWnd;

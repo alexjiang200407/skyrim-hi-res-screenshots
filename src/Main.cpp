@@ -3,7 +3,6 @@
 #include "logger.h"
 #include "Window.h"
 #include "ScreenshotHandler.h"
-#include "Renderer.h"
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse)
 {
@@ -13,7 +12,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* sks
 
     try
     {
-        ImGui::Renderer::Install();
+        HRS::Graphics::CreateD3DAndSwapChainHook::Install();
     }
     catch (const HRSException& e)
     {
@@ -30,7 +29,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* sks
         if (message->type == SKSE::MessagingInterface::kDataLoaded)
         {
             HRS::HiResScreenshots::GetSingleton()->Register();
-            HRS::ScreenshotHandler::GetSingleton()->Register();
         }
 
     });

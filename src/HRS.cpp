@@ -1,6 +1,7 @@
 #include "HRS.h"
 #include "Window.h"
 #include "logger.h"
+#include "ScreenshotHandler.h"
 
 void HRS::HiResScreenshots::Register()
 {
@@ -34,11 +35,12 @@ RE::BSEventNotifyControl HRS::HiResScreenshots::ProcessEvent(RE::InputEvent* con
 	{
 		if (upscaled)
 		{
-			Window::GetSingleton()->ScaleWindow(Window::GetSingleton()->startingResolution);
+			Window::GetSingleton()->gfx->ResizeTarget(Window::GetSingleton()->startingResolution);
 		}
 		else
 		{
-			Window::GetSingleton()->ScaleWindow({ 2560, 1440 });
+			auto upscaleResolution = ScreenshotHandler::GetSingleton()->settings.GetUpscaleResolution();
+			Window::GetSingleton()->gfx->ResizeTarget(upscaleResolution);
 		}
 
 		upscaled = !upscaled;
@@ -47,7 +49,13 @@ RE::BSEventNotifyControl HRS::HiResScreenshots::ProcessEvent(RE::InputEvent* con
 	return RE::BSEventNotifyControl::kContinue;
 }
 
-uint32_t HRS::HiResScreenshots::InputEventSettings::GetScreenshotKey() 
+void HRS::HiResScreenshots::RereadAllSettings()
+{
+	ScreenshotHandler::GetSingleton()->settings.ReadAllSettings();
+	HiResScreenshots::GetSingleton()->inputSettings.ReadAllSettings();
+}
+
+uint32_t HRS::HiResScreenshots::InputEventSettings::GetScreenshotKey()
 { 
 	std::string val = GetSetting("screenshotKey");
 	return strtoul(val.c_str(), nullptr, 0);

@@ -3,20 +3,27 @@
 #include <DirectXTex.h>
 
 
-INT32 HRS::ScreenshotHandler::Hooks::TakeScreenshot::thunk(ID3D11Texture2D* a_texture_2d, char const* a_path, RE::BSGraphics::TextureFileFormat a_format)
+HRS::Resolution HRS::ScreenshotHandler::ScreenshotSettings::GetUpscaleResolution()
 {
-	Window::GetSingleton()->gfx->CaptureScreen(a_texture_2d);
-	a_texture_2d->Release();
-	return 0;
+	std::string buffer = GetSetting("upscaleWidth");
+	int width = atoi(buffer.c_str());
+
+	buffer = GetSetting("upscaleHeight");
+
+	int height = atoi(buffer.c_str());
+
+	return Resolution(width, height);
 }
 
-INT64 HRS::ScreenshotHandler::Hooks::WriteScreenshot::thunk(INT64 a1, UINT32 a2, INT64 a3, const wchar_t* dest)
+std::string HRS::ScreenshotHandler::ScreenshotSettings::GetScreenshotFolder()
 {
-	logger::info("Writing screenshot {} {} {}", a1, a2, a3);
-	return func(a1, a2, a3, dest);
+	std::string str = GetSetting("screenshotFolder");
+
+	return str;
 }
 
-void HRS::ScreenshotHandler::Register()
+HRS::ScreenshotHandler::ImageType HRS::ScreenshotHandler::ScreenshotSettings::GetImageType()
 {
-	Hooks::InstallHooks();
+	std::string buffer = GetSetting("imageFormat");
+	return (ImageType)atoi(buffer.c_str());
 }

@@ -11,39 +11,52 @@ namespace HRS
 		:
 		public Singleton<ScreenshotHandler>
 	{
-	private:
-		struct Hooks
+	public:
+		enum class ImageType
+		{
+			BMP,
+			PNG,
+			JPG,
+			TIFF
+		};
+
+	public:
+		static constexpr size_t numSettings = 4;
+		class ScreenshotSettings
+			:
+			public Settings<numSettings>
 		{
 
-			struct TakeScreenshot
+		public:
+			ScreenshotSettings(const char* file)
+				:
+				Settings(file)
 			{
-				static INT32 thunk(ID3D11Texture2D* a_texture_2d, char const* a_path, RE::BSGraphics::TextureFileFormat a_format);
-				static inline REL::Relocation<decltype(thunk)> func;
-			};
-
-			struct WriteScreenshot
-			{
-				static INT64 thunk(INT64 a1, UINT32 a2, INT64 a3, const wchar_t* dest);
-				static inline REL::Relocation<decltype(thunk)> func;
-			};
-
-
-			static void InstallHooks()
-			{
-				REL::Relocation<std::uintptr_t> TakeScreenshot_hook{ REL::ID(36853), 0x69 };
-				REL::Relocation<std::uintptr_t> WriteScreenshot_hook{ REL::ID(77406), 0x143 };
-
-				stl::write_thunk_call<TakeScreenshot>(TakeScreenshot_hook.address());
-				stl::write_thunk_call<WriteScreenshot>(WriteScreenshot_hook.address());
+				ReadAllSettings();
 			}
+
+			constexpr std::array<Option, numSettings> GetAllOptions() const override
+			{
+				return {
+					Option{ "upscaleWidth", "1920" },
+					Option{ "upscaleHeight", "1080" },
+					Option{ "screenshotFolder", ".\\"},
+					Option{ "imageFormat", "2" }
+				};
+			};
+
+			constexpr const char*    GetSection() const override { return "Screenshot"; };
+
+			Resolution               GetUpscaleResolution();
+			std::string              GetScreenshotFolder();
+			ImageType                GetImageType();
 		};
-	
 	public:
 		ScreenshotHandler() = default;
 		ScreenshotHandler(const ScreenshotHandler&) = delete;
 		const ScreenshotHandler& operator=(const ScreenshotHandler&) = delete;	
 
-		void Register();
 	public:
+		ScreenshotSettings settings{ INI_FILE };
 	};
 }

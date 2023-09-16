@@ -3,6 +3,7 @@
 #include <any>
 #include <SimpleIni.h>
 #include <direct.h>
+#include "logger.h"
 
 template <size_t size>
 class Settings
@@ -22,13 +23,33 @@ public:
 		SI_Error rc = ini.LoadFile(file);
 
 		if (rc != SI_OK)
+		{
+			logger::warn("Ini file doesn't exist!");
+			for (int i = 0; i < size; i++)
+			{
+				Option      option = GetAllOptions()[i];
+				std::string key = option.name;
+				std::string defaultVal = option.defaultVal;
+
+				settingMap.insert({ key, defaultVal });
+			}
+
 			return;
+		}
+
+		logger::info("Reading all settings for {}", GetSection());
 
 		for (int i = 0; i < size; i++)
 		{
-			std::string key = GetAllKeys()[i].name;
-			const char* section = GetSection();
-			const char* value = ini.GetValue(section, key.c_str());
+			Option      option = GetAllOptions()[i];
+			std::string key = option.name;
+			std::string defaultVal = option.defaultVal;
+
+			logger::info("Searching for key {}", key);
+
+			const char* value = ini.GetValue(GetSection(), key.c_str(), defaultVal.c_str());
+			
+			logger::info("Value is {}", value);			
 			settingMap.insert({ key, value });
 		}
 	}
@@ -73,16 +94,16 @@ public:
 	};
 
 public:
-	virtual constexpr std::array<Option, size>      GetAllKeys() const = 0;
+	virtual constexpr std::array<Option, size>      GetAllOptions() const = 0;
 	virtual constexpr const char*                   GetSection() const = 0;
 	virtual std::string                             GetSetting(std::string key) 
 	{ 
 		auto found = settingMap.find(key);
 
-		if (found == std::end(settingMap))
-		{
-			return found->first.defaultVal;
-		}
+		//if (found == std::end(settingMap))
+		//{
+		//	return found->first.defaultVal;
+		//}
 
 		return found->second; 
 	};

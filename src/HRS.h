@@ -10,7 +10,7 @@ namespace HRS
 		public Singleton<HiResScreenshots>,
 		public RE::BSTEventSink<RE::InputEvent*>
 	{
-	private:
+	public:
 		static constexpr size_t numSettings = 2;
 		class InputEventSettings
 			:
@@ -26,7 +26,13 @@ namespace HRS
 				ReadAllSettings();
 			}
 
-			constexpr std::array<Option, numSettings>      GetAllKeys() const { return { Option{ "screenshotKey", "38" }, Option{ "upscaleKey", "1"}}; };
+			constexpr std::array<Option, numSettings>      GetAllOptions() const
+			{ 
+				return {
+					Option{ "screenshotKey", "210" }, 
+					Option{ "upscaleKey", "1" }
+				}; 
+			}
 			constexpr const char*                          GetSection() const { return "Input"; };
 			uint32_t                                       GetScreenshotKey();
 			uint32_t                                       GetUpscaleKey();
@@ -34,11 +40,14 @@ namespace HRS
 	public:
 		void                     Register();
 		RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* event, RE::BSTEventSource<RE::InputEvent*>*) override;
+		static void              RereadAllSettings();
 
+
+	public:
+		InputEventSettings inputSettings{ INI_FILE };
 
 	private:
 		bool               upscaled = false;
-		InputEventSettings inputSettings{ ".\\Data\\SKSE\\Plugins\\HiResScreenshots.ini" };
 	};
 }
 

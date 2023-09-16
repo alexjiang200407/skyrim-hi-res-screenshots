@@ -13,6 +13,21 @@ LRESULT CALLBACK HRS::Window::WndProc_Hook(HWND hWnd, UINT uMsg, WPARAM wParam, 
 	}
 #endif
 
+	switch (uMsg)
+	{
+	case WM_WINDOWPOSCHANGED:
+		return DefWindowProc(wnd->GetHwnd(), uMsg, wParam, lParam);
+
+	case WM_WINDOWPOSCHANGING:
+		return DefWindowProc(wnd->GetHwnd(), uMsg, wParam, lParam);
+
+	case WM_SIZE:
+	{
+		wnd->gfx->ResizeBuffer({ static_cast<int>(LOWORD(lParam)), static_cast<int>(HIWORD(lParam)) });
+		break;
+	}
+	}
+
 	return CallWindowProcW(Window::GetSingleton()->prevWndProc, hWnd, uMsg, wParam, lParam);
 }
 
